@@ -13,13 +13,16 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
+    var falconNode: SCNNode?
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         sceneView.delegate = self
         sceneView.autoenablesDefaultLighting = true
-        
+        let falconScene = SCNScene(named: "art.scnassets/millenium-falcon.scn")
+        falconNode = falconScene?.rootNode
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -54,6 +57,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             let planeNode = SCNNode(geometry: plane)
             planeNode.eulerAngles.x = -.pi / 2
             node.addChildNode(planeNode)
+            if let falcon = falconNode {
+                falcon.scale = SCNVector3(0.1,0.1,0.1)
+                node.addChildNode(falcon)
+            }
             
             
             
