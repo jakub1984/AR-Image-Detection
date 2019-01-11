@@ -6,6 +6,9 @@
   "resources" : [
     {
       "filename" : "keyboard.arreferenceimage"
+    },
+    {
+      "filename" : "pas.arreferenceimage"
     }
   ]
 }

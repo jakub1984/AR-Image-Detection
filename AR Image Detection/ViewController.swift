@@ -14,6 +14,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
     var falconNode: SCNNode?
+    var tieFighterNode: SCNNode?
+    var imageNodes = [SCNNode]()
+    var isClose = false
     
     
     override func viewDidLoad() {
@@ -22,7 +25,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         sceneView.autoenablesDefaultLighting = true
         let falconScene = SCNScene(named: "art.scnassets/millenium-falcon.scn")
+        let tieFighterScene = SCNScene(named: "art.scnassets/tie-fighter.scn")
         falconNode = falconScene?.rootNode
+        tieFighterNode = tieFighterScene?.rootNode
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -57,17 +62,70 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             let planeNode = SCNNode(geometry: plane)
             planeNode.eulerAngles.x = -.pi / 2
             node.addChildNode(planeNode)
-            if let falcon = falconNode {
-                falcon.scale = SCNVector3(0.1,0.1,0.1)
-                node.addChildNode(falcon)
+            
+            var shapeNode: SCNNode?
+            
+            switch imageAnchor.referenceImage.name {
+            case StarshipType.falcon.rawValue:
+                shapeNode = falconNode
+                
+            case StarshipType.tieFighter.rawValue:
+                shapeNode = tieFighterNode
+                
+            default:
+                break
+            }
+            
+            
+            guard let shapeNodeUnwrapped = shapeNode else {
+                return nil
+            }
+            let rotateObjects = SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2 * .pi, z: 0, duration: 10))
+            shapeNodeUnwrapped.runAction(rotateObjects)
+            shapeNodeUnwrapped.scale = SCNVector3(0.1,0.1,0.1)
+            
+            node.addChildNode(shapeNodeUnwrapped)
+            imageNodes.append(node)
+            return node
+
+        }
+        return nil
+    }
+
+    
+    func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+        if imageNodes.count == 2 {
+            let positionA = SCNVector3ToGLKVector3(imageNodes[0].position)
+            let positionB = SCNVector3ToGLKVector3(imageNodes[1].position)
+            let distance = GLKVector3Distance(positionA, positionB)
+            
+            if distance < 0.15 {
+            doTheBarrelRoll(node: imageNodes[0])
+            doTheBarrelRoll(node: imageNodes[1])
+            isClose = true
+            } else {
+                isClose = false
             }
             
             
             
         }
+    }
+
+    func doTheBarrelRoll(node: SCNNode){
+        if isClose {return}
+        let shapeNode = node.childNodes[1]
         
+        let closeAction = SCNAction.rotateBy(x: -2 * .pi, y: 0, z: 0, duration: 1)
         
-        return node
+        shapeNode.runAction(closeAction)
+        
+    }
+
+    
+    enum StarshipType : String {
+        case falcon = "pas"
+        case tieFighter = "keyboard"
     }
 
 }
